@@ -1,21 +1,14 @@
 import { Filter, Plus } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 
 import ConfirmModal from "../components/ConfirmModal";
+import NoteCard from "../components/NoteCard";
 import NoteCard from "../components/NoteCard";
 import PageHeader from "../components/PageHeader";
 import Select from "../components/Select";
 import { useNotesStore } from "../store/notes.store";
-
-export type SortOption = "updated" | "oldest" | "az" | "za";
-
-export const SortingOptions = [
-  { value: "updated", label: "Recently updated" },
-  { value: "oldest", label: "Oldest updated" },
-  { value: "az", label: "A-Z (Title)" },
-  { value: "za", label: "Z-A (Title)" },
-];
 
 export default function Home(): ReactElement {
   const notes = useNotesStore((s) => s.notes);
@@ -113,8 +106,8 @@ export default function Home(): ReactElement {
       {loading && <p className="text-sm text-gray-500">Loading notes...</p>}
 
       {!loading && notes.length > 0 && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredNotes.map((note) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {notes.map((note) => (
             <NoteCard key={note.slug} note={note} onDelete={setDeleteSlug} />
           ))}
         </div>

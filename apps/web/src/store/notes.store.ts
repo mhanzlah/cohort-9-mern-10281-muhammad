@@ -1,5 +1,6 @@
 import axios from "axios";
 import { create } from "zustand";
+import axios from "axios";
 
 import { api } from "../api/axios";
 
@@ -8,10 +9,6 @@ export type Note = {
   title: string;
   content: string;
   updatedAt: string;
-};
-
-type ApiResponse<T> = {
-  data: T;
 };
 
 type ApiError = {
@@ -25,11 +22,11 @@ type NotesState = {
   loading: boolean;
   searching: boolean;
   error: string | null;
+  query: string;
 
   createNote: (data: { title: string; content: string }) => Promise<void>;
-  getNotes: () => Promise<void>;
-  searchNotes: (query: string) => Promise<void>;
-  getNote: (slug: string) => Promise<Note | void>;
+  getNotes: (query?: string) => Promise<void>;
+  getNote: (slug: string) => Promise<void>;
   updateNote: (
     slug: string,
     data: {
@@ -39,13 +36,13 @@ type NotesState = {
   ) => Promise<void>;
   deleteNote: (slug: string) => Promise<void>;
 
-  clearSearch: () => void;
+  setQuery: (query: string) => void;
   clearError: () => void;
 };
 
-let searchRequestId = 0;
+let notesRequestId = 0;
 
-const getErrorMessage = (error: unknown, fallback: string): string => {
+const getErrorMessage = (error: unknown, fallback: string) => {
   if (axios.isAxiosError<ApiError>(error)) {
     return error.response?.data?.message || fallback;
   }
@@ -61,22 +58,33 @@ export const useNotesStore = create<NotesState>((set) => ({
   loading: false,
   searching: false,
   error: null,
+  query: "",
 
-  getNotes: async () => {
+  getNotes: async (query = get().query) => {
+    const requestId = ++notesRequestId;
+
     set({
       loading: true,
       error: null,
+      query,
     });
 
     try {
-      const res = await api.get<ApiResponse<Note[]>>("/notes");
+      const res = await api.get("/notes", {
+        params: query ? { search: query } : undefined,
+      });
+
+      if (requestId !== notesRequestId) return;
 
       set({
         notes: res.data.data,
         loading: false,
       });
     } catch (error: unknown) {
+      if (requestId !== notesRequestId) return;
+
       set({
+        error: getErrorMessage(error, "Failed to fetch notes"),
         error: getErrorMessage(error, "Failed to fetch notes"),
         loading: false,
       });
@@ -85,73 +93,22 @@ export const useNotesStore = create<NotesState>((set) => ({
     }
   },
 
-  searchNotes: async (query) => {
-    const value = query.trim();
-
-    if (!value) {
-      searchRequestId++;
-
-      set({
-        searchResults: [],
-        searching: false,
-      });
-
-      return;
-    }
-
-    const requestId = ++searchRequestId;
-
-    set({
-      searching: true,
-      error: null,
-    });
-
-    try {
-      const res = await api.get<ApiResponse<Note[]>>("/notes", {
-        params: {
-          search: value,
-        },
-      });
-
-      if (requestId !== searchRequestId) {
-        return;
-      }
-
-      set({
-        searchResults: res.data.data,
-        searching: false,
-      });
-    } catch (error: unknown) {
-      if (requestId !== searchRequestId) {
-        return;
-      }
-
-      set({
-        error: getErrorMessage(error, "Failed to search notes"),
-        searching: false,
-      });
-    }
-  },
-
   getNote: async (slug) => {
-    set({
-      loading: true,
-      error: null,
-    });
+    set({ loading: true, error: null });
 
     try {
-      const res = await api.get<ApiResponse<Note>>(`/notes/${slug}`);
-      const note = res.data.data;
+      const res = await api.get(`/notes/${slug}`);
+      const note: Note = res.data.data;
 
       set((state) => ({
         notes: state.notes.some((n) => n.slug === note.slug)
           ? state.notes.map((n) => (n.slug === note.slug ? note : n))
           : [...state.notes, note],
-        note,
         loading: false,
       }));
     } catch (error: unknown) {
       set({
+        error: getErrorMessage(error, "Failed to fetch note"),
         error: getErrorMessage(error, "Failed to fetch note"),
         loading: false,
       });
@@ -161,16 +118,14 @@ export const useNotesStore = create<NotesState>((set) => ({
   },
 
   createNote: async (data) => {
-    set({
-      error: null,
-    });
+    set({ error: null });
 
     try {
       const res = await api.post<ApiResponse<Note>>("/notes", data);
       const note = res.data.data;
 
       set((state) => ({
-        notes: [note, ...state.notes],
+        notes: [res.data.data, ...state.notes],
       }));
     } catch (error: unknown) {
       set({
@@ -178,46 +133,43 @@ export const useNotesStore = create<NotesState>((set) => ({
       });
 
       throw error;
+
+      throw error;
     }
   },
 
   updateNote: async (slug, data) => {
-    set({
-      error: null,
-    });
+    set({ error: null });
 
     try {
       const res = await api.patch<ApiResponse<Note>>(`/notes/${slug}`, data);
-      const note = res.data.data;
 
       set((state) => ({
-        notes: state.notes.map((item) => (item.slug === slug ? note : item)),
-        searchResults: state.searchResults.map((item) =>
-          item.slug === slug ? note : item,
+        notes: state.notes.map((note) =>
+          note.slug === slug ? res.data.data : note,
         ),
         note,
       }));
     } catch (error: unknown) {
       set({
         error: getErrorMessage(error, "Failed to update note"),
+        error: getErrorMessage(error, "Failed to update note"),
       });
+
+      throw error;
 
       throw error;
     }
   },
 
   deleteNote: async (slug) => {
-    set({
-      error: null,
-    });
+    set({ error: null });
 
     try {
       await api.delete(`/notes/${slug}`);
 
       set((state) => ({
         notes: state.notes.filter((note) => note.slug !== slug),
-        searchResults: state.searchResults.filter((note) => note.slug !== slug),
-        note: state.note?.slug === slug ? null : state.note,
       }));
     } catch (error: unknown) {
       set({
@@ -228,18 +180,7 @@ export const useNotesStore = create<NotesState>((set) => ({
     }
   },
 
-  clearSearch: () => {
-    searchRequestId++;
+  setQuery: (query) => set({ query }),
 
-    set({
-      searchResults: [],
-      searching: false,
-    });
-  },
-
-  clearError: () => {
-    set({
-      error: null,
-    });
-  },
+  clearError: () => set({ error: null }),
 }));

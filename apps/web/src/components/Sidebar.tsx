@@ -67,6 +67,20 @@ export default function Sidebar(): ReactElement {
           </div>
         )}
 
+        {user && (
+          <div className="flex-1 px-3 py-2">
+            <nav className="flex flex-col gap-1">
+              <Link
+                to="/"
+                className="text-sm flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-200 text-gray-700"
+              >
+                <FileText size={16} />
+                Notes
+              </Link>
+            </nav>
+          </div>
+        )}
+
         <div className="h-24 border-t border-gray-300 p-3 flex items-center">
           {loading ? (
             <div className="text-sm text-gray-400 px-2">Loading...</div>
