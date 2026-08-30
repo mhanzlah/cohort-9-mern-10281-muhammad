@@ -19,13 +19,6 @@ export default function SearchModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
-  const searchResults = useNotesStore((s) => s.searchResults);
-  const searching = useNotesStore((s) => s.searching);
-  const searchNotes = useNotesStore((s) => s.searchNotes);
-  const clearSearch = useNotesStore((s) => s.clearSearch);
-
-  const [query, setQuery] = useState("");
-
   // Global shortcuts: Ctrl/Cmd + K and /
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -113,16 +106,19 @@ export default function SearchModal({
 
   // Debounced search
   useEffect(() => {
-    if (!isOpen) return;
+    if (isOpen) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    }
+  }, [isOpen]);
 
-    const value = query.trim();
-
-    const timeout = setTimeout(() => {
-      searchNotes(value);
-    }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [query, isOpen, searchNotes]);
+  useEffect(() => {
+    if (!isOpen && previouslyFocusedElement.current) {
+      previouslyFocusedElement.current.focus();
+      previouslyFocusedElement.current = null;
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -180,62 +176,21 @@ export default function SearchModal({
           />
         </div>
 
-        <div className="max-h-80 overflow-y-auto">
-          {searching ? (
-            <p className="px-4 py-8 text-center text-sm text-gray-400">
-              Searching...
-            </p>
-          ) : searchResults.length > 0 ? (
-            searchResults.map((note) => (
-              <Link
-                key={note.slug}
-                to={`/n/${note.slug}`}
-                onClick={() => setIsOpen(false)}
-                className="
-                  block
-                  px-4 py-3
-                  border-b border-gray-100
-                  last:border-0
-                  hover:bg-gray-50
-                  transition
-                "
-              >
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {note.title || "Untitled"}
-                </p>
+        <p className="text-xs text-gray-400 px-4 py-2 text-center">
+          In Development...
+        </p>
 
-                <p className="mt-1 text-xs text-gray-500 line-clamp-1">
-                  {stripHtml(note.content) || "No content"}
-                </p>
-              </Link>
-            ))
-          ) : query.trim() ? (
-            <p className="px-4 py-8 text-center text-sm text-gray-400">
-              No notes found.
-            </p>
-          ) : (
-            <p className="px-4 py-8 text-center text-sm text-gray-400">
-              Search your notes...
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-2 text-xs text-gray-400">
+        <div className="flex text-xs text-gray-500 px-4 py-2 border-t border-gray-300 justify-between">
           <span>
-            <kbd className="px-1.5 py-0.5 border border-gray-300 rounded">
-              Ctrl
-            </kbd>{" "}
-            +{" "}
-            <kbd className="px-1.5 py-0.5 border border-gray-300 rounded">
-              K
-            </kbd>
+            <kbd className="px-1 border rounded">Ctrl</kbd> +{" "}
+            <kbd className="px-1 border rounded">K</kbd>
           </span>
 
           <span>
-            <kbd className="px-1.5 py-0.5 border border-gray-300 rounded">
-              Esc
-            </kbd>{" "}
-            to close
+            <kbd className="px-1 border rounded">/</kbd>
+          </span>
+          <span>
+            <kbd className="px-1 border rounded">Esc</kbd>
           </span>
         </div>
       </div>

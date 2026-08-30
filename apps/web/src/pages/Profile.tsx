@@ -163,7 +163,7 @@ export default function Profile(): ReactElement {
           </div>
         )}
 
-        {!loading && notes.length > 0 && (
+        {!loading && sortedNotes.length > 0 && (
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
             <table className="w-full text-sm">
               <thead>
@@ -171,9 +171,11 @@ export default function Profile(): ReactElement {
                   <th className="px-4 py-3 text-left font-medium text-gray-500">
                     Title
                   </th>
+
                   <th className="px-4 py-3 text-left font-medium text-gray-500">
                     Preview
                   </th>
+
                   <th className="w-28 px-4 py-3 text-right font-medium text-gray-500">
                     Actions
                   </th>
@@ -181,21 +183,20 @@ export default function Profile(): ReactElement {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {notes.map((note) => (
+                {sortedNotes.map((note) => (
                   <tr
                     key={note.slug}
-                    className="group transition-colors hover:bg-gray-50"
-                    className="group transition-colors hover:bg-gray-50"
+                    className="group hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-3.5">
                       <Link
                         to={`/n/${note.slug}`}
                         className="
-                  font-medium
-                  text-gray-900
-                  hover:text-black
-                  transition-colors
-                "
+                          font-medium
+                          text-gray-900
+                          hover:text-black
+                          transition-colors
+                        "
                       >
                         {note.title || "Untitled"}
                       </Link>
@@ -225,13 +226,14 @@ export default function Profile(): ReactElement {
                             to={`/n/${note.slug}`}
                             aria-label="View note"
                             className="
-                      flex h-8 w-8 items-center justify-center
-                      rounded-md
-                      text-gray-500
-                      hover:bg-gray-100
-                      hover:text-gray-900
-                      transition
-                    "
+                              flex h-8 w-8
+                              items-center justify-center
+                              rounded-md
+                              text-gray-500
+                              hover:bg-gray-100
+                              hover:text-gray-900
+                              transition
+                            "
                           >
                             <Eye size={15} />
                             <Eye size={15} />
@@ -243,13 +245,14 @@ export default function Profile(): ReactElement {
                             to={`/n/${note.slug}/edit`}
                             aria-label="Edit note"
                             className="
-                      flex h-8 w-8 items-center justify-center
-                      rounded-md
-                      text-gray-500
-                      hover:bg-gray-100
-                      hover:text-gray-900
-                      transition
-                    "
+                              flex h-8 w-8
+                              items-center justify-center
+                              rounded-md
+                              text-gray-500
+                              hover:bg-gray-100
+                              hover:text-gray-900
+                              transition
+                            "
                           >
                             <Pencil size={15} />
                             <Pencil size={15} />
@@ -265,13 +268,14 @@ export default function Profile(): ReactElement {
                             }}
                             aria-label="Delete note"
                             className="
-                      flex h-8 w-8 items-center justify-center
-                      rounded-md
-                      text-gray-400
-                      hover:bg-red-50
-                      hover:text-red-600
-                      transition
-                    "
+                              flex h-8 w-8
+                              items-center justify-center
+                              rounded-md
+                              text-gray-400
+                              hover:bg-red-50
+                              hover:text-red-600
+                              transition
+                            "
                           >
                             <Trash2 size={15} />
                           </button>
