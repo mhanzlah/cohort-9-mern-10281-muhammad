@@ -12,15 +12,12 @@ import { useAuthStore } from "../store/auth.store";
 import { useNotesStore, type Note } from "../store/notes.store";
 import { SortingOptions, type SortOption } from "./Home";
 
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "");
-
 const sortNotes = (notes: Note[], sort: SortOption) => {
   return [...notes].sort((a, b) => {
     switch (sort) {
       case "oldest":
         return (
-          new Date(a.updatedAt).getTime() -
-          new Date(b.updatedAt).getTime()
+          new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
         );
 
       case "az":
@@ -32,8 +29,7 @@ const sortNotes = (notes: Note[], sort: SortOption) => {
       case "updated":
       default:
         return (
-          new Date(b.updatedAt).getTime() -
-          new Date(a.updatedAt).getTime()
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
     }
   });
@@ -59,19 +55,14 @@ export default function Profile(): ReactElement {
     getNotes();
   }, [getNotes]);
 
-  const sortedNotes = useMemo(
-    () => sortNotes(notes, sort),
-    [notes, sort],
-  );
+  const sortedNotes = useMemo(() => sortNotes(notes, sort), [notes, sort]);
 
   const handleLogout = async () => {
     try {
       await authService.logout();
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          error.response?.data?.message ?? "Logout request failed",
-        );
+        console.error(error.response?.data?.message ?? "Logout request failed");
       } else {
         console.error("An unexpected error occurred");
       }
@@ -149,9 +140,7 @@ export default function Profile(): ReactElement {
           )}
         </div>
 
-        {loading && (
-          <p className="text-sm text-gray-500">Loading notes...</p>
-        )}
+        {loading && <p className="text-sm text-gray-500">Loading notes...</p>}
 
         {!loading && notes.length === 0 && (
           <div className="rounded-md border border-gray-300 p-4 text-sm text-gray-500">
@@ -201,15 +190,12 @@ export default function Profile(): ReactElement {
                     </td>
 
                     <td className="max-w-0 px-4 py-3.5">
-                      <p className="truncate text-gray-500">
-                        {stripHtml(note.content).slice(0, 100) ||
-                          "No content"}
-                      </p>
-                    <td className="max-w-0 px-4 py-3.5">
-                      <p className="truncate text-gray-500">
-                        {stripHtml(note.content).slice(0, 100) ||
-                          "No content"}
-                      </p>
+                      <div
+                        className="mt-2 text-sm leading-relaxed text-gray-500 line-clamp-3"
+                        dangerouslySetInnerHTML={{
+                          __html: note.content || "<p>No content</p>",
+                        }}
+                      />
                     </td>
 
                     <td className="px-4 py-3.5">
