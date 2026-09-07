@@ -26,7 +26,6 @@ export default function SearchModal({
 
   const [query, setQuery] = useState("");
 
-  // Global shortcuts: Ctrl/Cmd + K and /
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -56,8 +55,6 @@ export default function SearchModal({
     };
   }, [setIsOpen]);
 
-  // Modal focus, escape, and focus trapping
-  // Modal focus, escape, and focus trapping
   useEffect(() => {
     if (!isOpen) {
       clearSearch();
@@ -181,18 +178,62 @@ export default function SearchModal({
           />
         </div>
 
-        <p className="text-xs text-gray-400 px-4 py-2 text-center">
-          In Development...
-        </p>
+        <div className="max-h-80 overflow-y-auto">
+          {searching ? (
+            <p className="px-4 py-8 text-center text-sm text-gray-400">
+              Searching...
+            </p>
+          ) : searchResults.length > 0 ? (
+            searchResults.map((note) => (
+              <Link
+                key={note.slug}
+                to={`/n/${note.slug}`}
+                onClick={() => setIsOpen(false)}
+                className="
+                  block
+                  px-4 py-3
+                  border-b border-gray-100
+                  last:border-0
+                  hover:bg-gray-50
+                  transition
+                "
+              >
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {note.title || "Untitled"}
+                </p>
 
-        <div className="flex text-xs text-gray-500 px-4 py-2 border-t border-gray-300 justify-between">
+                <p className="mt-1 text-xs text-gray-500 line-clamp-1">
+                  {stripHtml(note.content) || "No content"}
+                </p>
+              </Link>
+            ))
+          ) : query.trim() ? (
+            <p className="px-4 py-8 text-center text-sm text-gray-400">
+              No notes found.
+            </p>
+          ) : (
+            <p className="px-4 py-8 text-center text-sm text-gray-400">
+              Search your notes...
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-2 text-xs text-gray-400">
           <span>
-            <kbd className="px-1 border rounded">Ctrl</kbd> +{" "}
-            <kbd className="px-1 border rounded">K</kbd>
+            <kbd className="px-1.5 py-0.5 border border-gray-300 rounded">
+              Ctrl
+            </kbd>{" "}
+            +{" "}
+            <kbd className="px-1.5 py-0.5 border border-gray-300 rounded">
+              K
+            </kbd>
           </span>
 
           <span>
-            <kbd className="px-1 border rounded">Esc</kbd>
+            <kbd className="px-1.5 py-0.5 border border-gray-300 rounded">
+              Esc
+            </kbd>{" "}
+            to close
           </span>
         </div>
       </div>

@@ -83,7 +83,6 @@ export default function Home(): ReactElement {
     <>
       <PageHeader>
         <h1 className="text-xl font-semibold">Your Notes</h1>
-        <h1 className="text-xl font-semibold">Your Notes</h1>
 
         <div className="flex items-center gap-2">
           <div className="relative flex items-center">

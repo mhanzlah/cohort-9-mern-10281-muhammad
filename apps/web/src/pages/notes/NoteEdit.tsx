@@ -1,275 +1,143 @@
-import axios from "axios";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState, type ReactElement } from "react";
-import { useForm } from "react-hook-form";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Filter, Plus } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { Link } from "react-router-dom";
 
+import ConfirmModal from "../../components/ConfirmModal";
+import NoteCard from "../../components/NoteCard";
 import PageHeader from "../../components/PageHeader";
-import RichEditor from "../../components/RichEditor";
+import Select from "../../components/Select";
 import { useNotesStore } from "../../store/notes.store";
-import {
-  updateNoteSchema,
-  type UpdateNoteInput,
-} from "../../validation/notes.validation";
-import FormField from "../../components/FormField";
-import NotFound from "../NotFound";
 
-export default function NoteEdit(): ReactElement {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
+export type SortOption = "updated" | "oldest" | "az" | "za";
 
-  const notes = useNotesStore((state) => state.notes);
-  const getNote = useNotesStore((state) => state.getNote);
-  const updateNote = useNotesStore((state) => state.updateNote);
-  const loading = useNotesStore((state) => state.loading);
+export const SortingOptions = [
+  { value: "updated", label: "Recently updated" },
+  { value: "oldest", label: "Oldest updated" },
+  { value: "az", label: "A-Z (Title)" },
+  { value: "za", label: "Z-A (Title)" },
+];
 
-  const note = notes.find((item) => item.slug === slug);
+export default function Home(): ReactElement {
+  const notes = useNotesStore((s) => s.notes);
+  const getNotes = useNotesStore((s) => s.getNotes);
+  const deleteNote = useNotesStore((s) => s.deleteNote);
+  const loading = useNotesStore((s) => s.loading);
 
-  const [content, setContent] = useState("");
-  const [fetchingNote, setFetchingNote] = useState(!note);
-  const [notFound, setNotFound] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [updateError, setUpdateError] = useState<string | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<UpdateNoteInput>({
-    resolver: zodResolver(updateNoteSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-    },
-  });
+  const [sort, setSort] = useState<SortOption>("updated");
+  const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slug) {
-      setFetchingNote(false);
-      setNotFound(true);
-      return;
-    }
+    getNotes();
+  }, [getNotes]);
 
-    if (note) {
-      setFetchingNote(false);
-      setNotFound(false);
-      setFetchError(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    const fetchNote = async () => {
-      setFetchingNote(true);
-      setNotFound(false);
-      setFetchError(null);
-
-      try {
-        await getNote(slug);
-      } catch (error: unknown) {
-        if (cancelled) return;
-
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          setNotFound(true);
-        } else {
-          setFetchError(
-            "Failed to load the note. Please check your connection and try again.",
+  const filteredNotes = useMemo(() => {
+    return [...notes].sort((a, b) => {
+      switch (sort) {
+        case "oldest":
+          return (
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
           );
-        }
-      } finally {
-        if (!cancelled) {
-          setFetchingNote(false);
-        }
+
+        case "az":
+          return a.title.localeCompare(b.title);
+
+        case "za":
+          return b.title.localeCompare(a.title);
+
+        case "updated":
+        default:
+          return (
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          );
       }
-    };
-
-    void fetchNote();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [slug, note, getNote]);
-
-  useEffect(() => {
-    if (!note) return;
-
-    reset({
-      title: note.title,
-      content: note.content,
     });
+  }, [notes, sort]);
 
-    setContent(note.content || "");
-  }, [note, reset]);
-
-  const handleRetry = () => {
-    if (!slug) return;
-
-    setFetchingNote(true);
-    setNotFound(false);
-    setFetchError(null);
-
-    const retry = async () => {
-      try {
-        await getNote(slug);
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          setNotFound(true);
-        } else {
-          setFetchError(
-            "Failed to load the note. Please check your connection and try again.",
-          );
-        }
-      } finally {
-        setFetchingNote(false);
-      }
-    };
-
-    void retry();
-  };
-
-  const onSubmit = async (data: UpdateNoteInput) => {
-    if (!note) return;
-
-    setUpdateError(null);
+  const handleDelete = async () => {
+    if (!deleteSlug) return;
 
     try {
-      await updateNote(note.slug, {
-        title: data.title,
-        content,
-      });
+      setDeleting(true);
+      setDeleteError(null);
 
-      navigate(`/n/${note.slug}`);
-    } catch (error: unknown) {
-      setUpdateError(
+      await deleteNote(deleteSlug);
+      setDeleteSlug(null);
+    } catch (error) {
+      setDeleteError(
         error instanceof Error
           ? error.message
-          : "Failed to update the note. Please try again.",
+          : "Failed to delete note. Please try again.",
       );
+    } finally {
+      setDeleting(false);
     }
   };
-
-  if (fetchingNote || (loading && !note)) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-gray-500">Loading note...</p>
-      </div>
-    );
-  }
-
-  if (notFound) {
-    return <NotFound message="The note you are looking for does not exist." />;
-  }
-
-  if (fetchError) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-sm text-red-500">{fetchError}</p>
-
-        <button
-          type="button"
-          onClick={handleRetry}
-          className="
-            mt-4
-            rounded-md
-            bg-black
-            px-4 py-2
-            text-sm
-            text-white
-            transition
-            hover:bg-gray-800
-          "
-        >
-          Try again
-        </button>
-      </div>
-    );
-  }
-
-  if (!note) {
-    return <NotFound message="The note you are looking for does not exist." />;
-  }
-
-  const saving = isSubmitting || loading;
 
   return (
     <>
       <PageHeader>
-        <h1 className="text-xl font-semibold">Edit Note</h1>
+        <h1 className="text-xl font-semibold">Your Notes</h1>
 
         <div className="flex items-center gap-2">
-          <Link
-            to={`/n/${note.slug}`}
-            className="
-              rounded-md
-              border border-gray-300
-              px-4 py-2
-              text-sm
-              transition
-              hover:bg-gray-50
-            "
-          >
-            Cancel
-          </Link>
+          <div className="relative flex items-center">
+            <Filter
+              size={14}
+              className="pointer-events-none absolute left-2.5 text-gray-500"
+            />
 
-          <button
-            type="submit"
-            form="note-edit-form"
-            disabled={saving}
+            <Select
+              value={sort}
+              aria-label="Sort notes"
+              options={SortingOptions}
+              onChange={(value) => setSort(value as SortOption)}
+            />
+          </div>
+
+          <Link
+            to="/n/new"
             className="
-              rounded-md
-              bg-black
-              px-4 py-2
-              text-sm
-              text-white
-              transition
-              hover:bg-black/90
-              disabled:opacity-50
+              flex items-center gap-1
+              rounded-md bg-black px-3 py-2
+              text-sm text-white
+              transition hover:bg-black/90
             "
           >
-            {saving ? "Saving..." : "Update"}
-          </button>
+            <Plus size={16} />
+            New Note
+          </Link>
         </div>
       </PageHeader>
 
-      <form
-        id="note-edit-form"
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6"
-      >
-        <FormField
-          placeholder="Untitled note"
-          className="w-full text-2xl font-semibold border-none outline-none focus:outline-none focus:ring-0 placeholder:text-gray-300 bg-transparent px-0"
-          type="text"
-          registration={register("title")}
-          error={errors.title?.message}
-        />
+      {loading && <p className="text-sm text-gray-500">Loading notes...</p>}
 
-        <div className="overflow-hidden rounded-md border border-gray-300 bg-white">
-          <RichEditor
-            value={content}
-            onChange={(value) => {
-              setContent(value);
-
-              setValue("content", value, {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-            }}
-          />
+      {!loading && notes.length > 0 && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredNotes.map((note) => (
+            <NoteCard key={note.slug} note={note} onDelete={setDeleteSlug} />
+          ))}
         </div>
+      )}
 
-        {errors.content && (
-          <p className="text-xs text-red-500">{errors.content.message}</p>
-        )}
+      {!loading && notes.length === 0 && (
+        <p className="text-sm text-gray-500">
+          No notes yet. Create your first note.
+        </p>
+      )}
 
-        {updateError && (
-          <p role="alert" className="text-sm text-red-500">
-            {updateError}
-          </p>
-        )}
-      </form>
+      <ConfirmModal
+        isOpen={deleteSlug !== null}
+        setIsOpen={(isOpen) => {
+          if (!isOpen && !deleting) {
+            setDeleteSlug(null);
+            setDeleteError(null);
+          }
+        }}
+        loading={deleting}
+        onConfirm={handleDelete}
+        error={deleteError}
+      />
     </>
   );
 }

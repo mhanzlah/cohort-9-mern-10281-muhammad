@@ -1,5 +1,4 @@
 import axios from "axios";
-import axios from "axios";
 import { create } from "zustand";
 
 import { api } from "../api/axios";
@@ -44,6 +43,16 @@ type NotesState = {
   clearError: () => void;
 };
 
+let searchRequestId = 0;
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError<ApiError>(error)) {
+    return error.response?.data?.message || fallback;
+  }
+
+  return fallback;
+};
+
 export const useNotesStore = create<NotesState>((set) => ({
   notes: [],
   note: null,
@@ -80,7 +89,13 @@ export const useNotesStore = create<NotesState>((set) => ({
     const value = query.trim();
 
     if (!value) {
-      set({ searchResults: [] });
+      searchRequestId++;
+
+      set({
+        searchResults: [],
+        searching: false,
+      });
+
       return;
     }
 
@@ -184,7 +199,6 @@ export const useNotesStore = create<NotesState>((set) => ({
       }));
     } catch (error: unknown) {
       set({
-        error: getErrorMessage(error, "Failed to update note"),
         error: getErrorMessage(error, "Failed to update note"),
       });
 
