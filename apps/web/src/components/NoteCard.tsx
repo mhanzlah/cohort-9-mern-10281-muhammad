@@ -10,8 +10,6 @@ type Props = {
   onDelete: (slug: string) => void;
 };
 
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "");
-
 export default function NoteCard({ note, onDelete }: Props) {
   return (
     <article
@@ -46,9 +44,12 @@ export default function NoteCard({ note, onDelete }: Props) {
           <div className="w-16 shrink-0" />
         </div>
 
-        <p className="mt-2 text-sm leading-relaxed text-gray-500 line-clamp-3">
-          {stripHtml(note.content).slice(0, 160) || "No content"}
-        </p>
+        <div
+          className="mt-2 text-sm leading-relaxed text-gray-500 line-clamp-3"
+          dangerouslySetInnerHTML={{
+            __html: note.content || "<p>No content</p>",
+          }}
+        />
 
         <div className="mt-auto pt-5">
           <p className="text-xs text-gray-400">
