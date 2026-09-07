@@ -4,7 +4,6 @@ import { useEffect, useState, type ReactElement } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import FormField from "../../components/FormField";
 import PageHeader from "../../components/PageHeader";
 import RichEditor from "../../components/RichEditor";
 import { useNotesStore } from "../../store/notes.store";
@@ -13,6 +12,7 @@ import {
   type UpdateNoteInput,
 } from "../../validation/notes.validation";
 import FormField from "../../components/FormField";
+import NotFound from "../NotFound";
 
 export default function NoteEdit(): ReactElement {
   const { slug } = useParams<{ slug: string }>();
@@ -215,7 +215,6 @@ export default function NoteEdit(): ReactElement {
 
           <button
             type="submit"
-            form="note-edit-form"
             form="note-edit-form"
             disabled={saving}
             className="

@@ -1,12 +1,10 @@
 import axios from "axios";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import ConfirmModal from "../components/ConfirmModal";
 import PageHeader from "../components/PageHeader";
-import Select from "../components/Select";
 import Select from "../components/Select";
 import Tooltip from "../components/Tooltip";
 import { authService } from "../services/auth.service";
@@ -21,7 +19,8 @@ const sortNotes = (notes: Note[], sort: SortOption) => {
     switch (sort) {
       case "oldest":
         return (
-          new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+          new Date(a.updatedAt).getTime() -
+          new Date(b.updatedAt).getTime()
         );
 
       case "az":
@@ -33,34 +32,8 @@ const sortNotes = (notes: Note[], sort: SortOption) => {
       case "updated":
       default:
         return (
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-    }
-  });
-};
-import { useNotesStore, type Note } from "../store/notes.store";
-import { SortingOptions, type SortOption } from "./Home";
-
-const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "");
-
-const sortNotes = (notes: Note[], sort: SortOption) => {
-  return [...notes].sort((a, b) => {
-    switch (sort) {
-      case "oldest":
-        return (
-          new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-        );
-
-      case "az":
-        return a.title.localeCompare(b.title);
-
-      case "za":
-        return b.title.localeCompare(a.title);
-
-      case "updated":
-      default:
-        return (
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          new Date(b.updatedAt).getTime() -
+          new Date(a.updatedAt).getTime()
         );
     }
   });
@@ -78,7 +51,6 @@ export default function Profile(): ReactElement {
   const loading = useNotesStore((s) => s.loading);
 
   const [sort, setSort] = useState<SortOption>("updated");
-  const [sort, setSort] = useState<SortOption>("updated");
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -87,16 +59,19 @@ export default function Profile(): ReactElement {
     getNotes();
   }, [getNotes]);
 
-  const sortedNotes = useMemo(() => sortNotes(notes, sort), [notes, sort]);
-
-  const sortedNotes = useMemo(() => sortNotes(notes, sort), [notes, sort]);
+  const sortedNotes = useMemo(
+    () => sortNotes(notes, sort),
+    [notes, sort],
+  );
 
   const handleLogout = async () => {
     try {
       await authService.logout();
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error(error.response?.data?.message ?? "Logout request failed");
+        console.error(
+          error.response?.data?.message ?? "Logout request failed",
+        );
       } else {
         console.error("An unexpected error occurred");
       }
@@ -135,7 +110,7 @@ export default function Profile(): ReactElement {
           <img
             src={`https://api.dicebear.com/10.x/lorelei/svg?seed=${user?.id}`}
             alt="Profile"
-            className="w-12 h-12 rounded-full border border-gray-300"
+            className="h-12 w-12 rounded-full border border-gray-300"
           />
 
           <div>
@@ -151,22 +126,9 @@ export default function Profile(): ReactElement {
           type="button"
           onClick={handleLogout}
           className="
-            px-4 py-2
-            text-sm
-            bg-black
-            text-white
-            rounded-md
-            hover:bg-black/90
-            transition
-          "
-          className="
-            px-4 py-2
-            text-sm
-            bg-black
-            text-white
-            rounded-md
-            hover:bg-black/90
-            transition
+            rounded-md bg-black px-4 py-2
+            text-sm text-white
+            transition hover:bg-black/90
           "
         >
           Logout
@@ -186,23 +148,13 @@ export default function Profile(): ReactElement {
             />
           )}
         </div>
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Your Notes</h2>
 
-          {notes.length > 0 && (
-            <Select
-              value={sort}
-              onChange={(value) => setSort(value as SortOption)}
-              aria-label="Sort notes"
-              options={SortingOptions}
-            />
-          )}
-        </div>
-
-        {loading && <p className="text-sm text-gray-500">Loading notes...</p>}
+        {loading && (
+          <p className="text-sm text-gray-500">Loading notes...</p>
+        )}
 
         {!loading && notes.length === 0 && (
-          <div className="text-sm text-gray-500 border border-gray-300 rounded-md p-4">
+          <div className="rounded-md border border-gray-300 p-4 text-sm text-gray-500">
             No notes yet. Create your first{" "}
             <Link to="/n/new" className="border-b">
               note
@@ -227,51 +179,21 @@ export default function Profile(): ReactElement {
                   <th className="w-28 px-4 py-3 text-right font-medium text-gray-500">
                     Actions
                   </th>
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">
-                    Title
-                  </th>
-
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">
-                    Preview
-                  </th>
-
-                  <th className="w-28 px-4 py-3 text-right font-medium text-gray-500">
-                    Actions
-                  </th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-gray-100">
                 {sortedNotes.map((note) => (
-              <tbody className="divide-y divide-gray-100">
-                {sortedNotes.map((note) => (
                   <tr
                     key={note.slug}
-                    className="group hover:bg-gray-50 transition-colors"
-                    className="group hover:bg-gray-50 transition-colors"
+                    className="group transition-colors hover:bg-gray-50"
                   >
                     <td className="px-4 py-3.5">
                       <Link
                         to={`/n/${note.slug}`}
                         className="
-                          font-medium
-                          text-gray-900
-                          hover:text-black
-                          transition-colors
-                        "
-                      >
-                        {note.title || "Untitled"}
-                      </Link>
-                    <td className="px-4 py-3.5">
-                      <Link
-                        to={`/n/${note.slug}`}
-                        className="
-                          font-medium
-                          text-gray-900
-                          hover:text-black
-                          transition-colors
+                          font-medium text-gray-900
+                          transition-colors hover:text-black
                         "
                       >
                         {note.title || "Untitled"}
@@ -280,16 +202,11 @@ export default function Profile(): ReactElement {
 
                     <td className="max-w-0 px-4 py-3.5">
                       <p className="truncate text-gray-500">
-                        {stripHtml(note.content).slice(0, 100) || "No content"}
-                      </p>
-                    <td className="max-w-0 px-4 py-3.5">
-                      <p className="truncate text-gray-500">
-                        {stripHtml(note.content).slice(0, 100) || "No content"}
+                        {stripHtml(note.content).slice(0, 100) ||
+                          "No content"}
                       </p>
                     </td>
 
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-end gap-1">
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-end gap-1">
                         <Tooltip text="View">
@@ -297,25 +214,11 @@ export default function Profile(): ReactElement {
                             to={`/n/${note.slug}`}
                             aria-label="View note"
                             className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-500
-                              hover:bg-gray-100
-                              hover:text-gray-900
-                              transition
-                            "
-                            className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-500
-                              hover:bg-gray-100
-                              hover:text-gray-900
-                              transition
+                              flex h-8 w-8 items-center justify-center
+                              rounded-md text-gray-500
+                              transition hover:bg-gray-100 hover:text-gray-900
                             "
                           >
-                            <Eye size={15} />
                             <Eye size={15} />
                           </Link>
                         </Tooltip>
@@ -325,25 +228,11 @@ export default function Profile(): ReactElement {
                             to={`/n/${note.slug}/edit`}
                             aria-label="Edit note"
                             className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-500
-                              hover:bg-gray-100
-                              hover:text-gray-900
-                              transition
-                            "
-                            className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-500
-                              hover:bg-gray-100
-                              hover:text-gray-900
-                              transition
+                              flex h-8 w-8 items-center justify-center
+                              rounded-md text-gray-500
+                              transition hover:bg-gray-100 hover:text-gray-900
                             "
                           >
-                            <Pencil size={15} />
                             <Pencil size={15} />
                           </Link>
                         </Tooltip>
@@ -357,25 +246,11 @@ export default function Profile(): ReactElement {
                             }}
                             aria-label="Delete note"
                             className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-400
-                              hover:bg-red-50
-                              hover:text-red-600
-                              transition
-                            "
-                            className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-400
-                              hover:bg-red-50
-                              hover:text-red-600
-                              transition
+                              flex h-8 w-8 items-center justify-center
+                              rounded-md text-gray-400
+                              transition hover:bg-red-50 hover:text-red-600
                             "
                           >
-                            <Trash2 size={15} />
                             <Trash2 size={15} />
                           </button>
                         </Tooltip>
