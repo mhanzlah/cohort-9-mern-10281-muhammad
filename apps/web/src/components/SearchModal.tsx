@@ -19,6 +19,13 @@ export default function SearchModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
+  const searchResults = useNotesStore((s) => s.searchResults);
+  const searching = useNotesStore((s) => s.searching);
+  const searchNotes = useNotesStore((s) => s.searchNotes);
+  const clearSearch = useNotesStore((s) => s.clearSearch);
+
+  const [query, setQuery] = useState("");
+
   // Global shortcuts: Ctrl/Cmd + K and /
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -49,6 +56,7 @@ export default function SearchModal({
     };
   }, [setIsOpen]);
 
+  // Modal focus, escape, and focus trapping
   // Modal focus, escape, and focus trapping
   useEffect(() => {
     if (!isOpen) {
@@ -106,19 +114,16 @@ export default function SearchModal({
 
   // Debounced search
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
 
-  useEffect(() => {
-    if (!isOpen && previouslyFocusedElement.current) {
-      previouslyFocusedElement.current.focus();
-      previouslyFocusedElement.current = null;
-    }
-  }, [isOpen]);
+    const value = query.trim();
+
+    const timeout = setTimeout(() => {
+      searchNotes(value);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [query, isOpen, searchNotes]);
 
   if (!isOpen) return null;
 
@@ -186,9 +191,6 @@ export default function SearchModal({
             <kbd className="px-1 border rounded">K</kbd>
           </span>
 
-          <span>
-            <kbd className="px-1 border rounded">/</kbd>
-          </span>
           <span>
             <kbd className="px-1 border rounded">Esc</kbd>
           </span>

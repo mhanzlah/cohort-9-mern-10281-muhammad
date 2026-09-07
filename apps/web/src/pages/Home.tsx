@@ -1,15 +1,14 @@
 import { Filter, Plus } from "lucide-react";
+import { Filter, Plus } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { Filter, Plus } from "lucide-react";
 
 import ConfirmModal from "../components/ConfirmModal";
 import NoteCard from "../components/NoteCard";
-import NoteCard from "../components/NoteCard";
 import PageHeader from "../components/PageHeader";
 import Select from "../components/Select";
-import { useNotesStore } from "../store/notes.store";
 import Select from "../components/Select";
+import { useNotesStore } from "../store/notes.store";
 
 export type SortOption = "updated" | "oldest" | "az" | "za";
 
@@ -65,6 +64,8 @@ export default function Home(): ReactElement {
       setDeleting(true);
       setDeleteError(null);
 
+      setDeleteError(null);
+
       await deleteNote(deleteSlug);
       setDeleteSlug(null);
     } catch (error) {
@@ -82,11 +83,30 @@ export default function Home(): ReactElement {
     <>
       <PageHeader>
         <h1 className="text-xl font-semibold">Your Notes</h1>
+        <h1 className="text-xl font-semibold">Your Notes</h1>
+
+        <div className="flex items-center gap-2">
+          <div className="relative flex items-center">
+            <Filter
+              size={14}
+              className="pointer-events-none absolute left-2.5 text-gray-500"
+            />
+
+            <Select
+              value={sort}
+              aria-label="Sort notes"
+              options={SortingOptions}
+              onChange={(value) => setSort(value as SortOption)}
+            />
+          </div>
 
           <Link
             to="/n/new"
             className="
               flex items-center gap-1
+              rounded-md bg-black px-3 py-2
+              text-sm text-white
+              transition hover:bg-black/90
               rounded-md bg-black px-3 py-2
               text-sm text-white
               transition hover:bg-black/90
@@ -101,11 +121,17 @@ export default function Home(): ReactElement {
       {loading && <p className="text-sm text-gray-500">Loading notes...</p>}
 
       {!loading && notes.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredNotes.map((note) => (
             <NoteCard key={note.slug} note={note} onDelete={setDeleteSlug} />
           ))}
         </div>
+      )}
+
+      {!loading && notes.length === 0 && (
+        <p className="text-sm text-gray-500">
+          No notes yet. Create your first note.
+        </p>
       )}
 
       {!loading && notes.length === 0 && (

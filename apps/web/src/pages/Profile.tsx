@@ -186,16 +186,14 @@ export default function Profile(): ReactElement {
                 {sortedNotes.map((note) => (
                   <tr
                     key={note.slug}
-                    className="group hover:bg-gray-50 transition-colors"
+                    className="group transition-colors hover:bg-gray-50"
                   >
                     <td className="px-4 py-3.5">
                       <Link
                         to={`/n/${note.slug}`}
                         className="
-                          font-medium
-                          text-gray-900
-                          hover:text-black
-                          transition-colors
+                          font-medium text-gray-900
+                          transition-colors hover:text-black
                         "
                       >
                         {note.title || "Untitled"}
@@ -204,11 +202,8 @@ export default function Profile(): ReactElement {
 
                     <td className="max-w-0 px-4 py-3.5">
                       <p className="truncate text-gray-500">
-                        {stripHtml(note.content).slice(0, 100) || "No content"}
-                      </p>
-                    <td className="max-w-0 px-4 py-3.5">
-                      <p className="truncate text-gray-500">
-                        {stripHtml(note.content).slice(0, 100) || "No content"}
+                        {stripHtml(note.content).slice(0, 100) ||
+                          "No content"}
                       </p>
                     <td className="max-w-0 px-4 py-3.5">
                       <p className="truncate text-gray-500">
@@ -219,23 +214,16 @@ export default function Profile(): ReactElement {
 
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-end gap-1">
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-end gap-1">
                         <Tooltip text="View">
                           <Link
                             to={`/n/${note.slug}`}
                             aria-label="View note"
                             className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-500
-                              hover:bg-gray-100
-                              hover:text-gray-900
-                              transition
+                              flex h-8 w-8 items-center justify-center
+                              rounded-md text-gray-500
+                              transition hover:bg-gray-100 hover:text-gray-900
                             "
                           >
-                            <Eye size={15} />
                             <Eye size={15} />
                           </Link>
                         </Tooltip>
@@ -245,16 +233,11 @@ export default function Profile(): ReactElement {
                             to={`/n/${note.slug}/edit`}
                             aria-label="Edit note"
                             className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-500
-                              hover:bg-gray-100
-                              hover:text-gray-900
-                              transition
+                              flex h-8 w-8 items-center justify-center
+                              rounded-md text-gray-500
+                              transition hover:bg-gray-100 hover:text-gray-900
                             "
                           >
-                            <Pencil size={15} />
                             <Pencil size={15} />
                           </Link>
                         </Tooltip>
@@ -268,13 +251,9 @@ export default function Profile(): ReactElement {
                             }}
                             aria-label="Delete note"
                             className="
-                              flex h-8 w-8
-                              items-center justify-center
-                              rounded-md
-                              text-gray-400
-                              hover:bg-red-50
-                              hover:text-red-600
-                              transition
+                              flex h-8 w-8 items-center justify-center
+                              rounded-md text-gray-400
+                              transition hover:bg-red-50 hover:text-red-600
                             "
                           >
                             <Trash2 size={15} />

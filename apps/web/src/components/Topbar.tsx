@@ -1,9 +1,6 @@
 import { FileText, Home, Pencil, Plus, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactElement } from "react";
-import { FileText, Home, Pencil, Plus, User } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import type { ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { useNotesStore } from "../store/notes.store";
@@ -44,7 +41,6 @@ export default function TopBar(): ReactElement {
   } else if (isNoteRoute) {
     const slug = paths[1];
 
-    // /n redirects to /
     if (slug === "new") {
       items.push({
         label: "New note",
