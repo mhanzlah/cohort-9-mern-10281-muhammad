@@ -1,12 +1,10 @@
 import { Filter, Plus } from "lucide-react";
-import { Filter, Plus } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { Link } from "react-router-dom";
 
 import ConfirmModal from "../components/ConfirmModal";
 import NoteCard from "../components/NoteCard";
 import PageHeader from "../components/PageHeader";
-import Select from "../components/Select";
 import Select from "../components/Select";
 import { useNotesStore } from "../store/notes.store";
 
@@ -106,9 +104,6 @@ export default function Home(): ReactElement {
               rounded-md bg-black px-3 py-2
               text-sm text-white
               transition hover:bg-black/90
-              rounded-md bg-black px-3 py-2
-              text-sm text-white
-              transition hover:bg-black/90
             "
           >
             <Plus size={16} />
@@ -125,12 +120,6 @@ export default function Home(): ReactElement {
             <NoteCard key={note.slug} note={note} onDelete={setDeleteSlug} />
           ))}
         </div>
-      )}
-
-      {!loading && notes.length === 0 && (
-        <p className="text-sm text-gray-500">
-          No notes yet. Create your first note.
-        </p>
       )}
 
       {!loading && notes.length === 0 && (
